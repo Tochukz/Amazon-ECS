@@ -1,43 +1,92 @@
 # Amazon Elastic Container Service (AWS ECS)
+[ECS Docs](https://docs.aws.amazon.com/ecs/index.html)   
 [Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html)  
+[Fargate User Guide](https://docs.aws.amazon.com/AmazonECS/latest/userguide/what-is-fargate.html)  
+[CLI Reference](https://docs.aws.amazon.com/cli/latest/reference/ecs/index.html)  
 [Pricing](https://aws.amazon.com/ecs/pricing/)   
-[Amazon ECS Tutorials](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-tutorials.html)
+[ECS Tutorials](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-tutorials.html)  
+[ECS Workshop](https://ecsworkshop.com/)
 
-## Chapter 1: Introduction 
-Amazon Elastic Container server is a highly scalable, fast, container management service that makes it easy to run, stop, and manage Docker containers on a cluster.
+## Chapter 1: Introduction
+### Setup
+__Create a VPC Only__  
+```
+$ aws ec2 create-vpc --cidr-block 10.0.0.0/16
+```  
+#### CLI Tools
+__AWS Copilot__   
+AWS Copilot is used to build, release, and operate containerized applications on Amazon ECS, and AWS Fargate.
+To install AWC copilot, use home brew
+```
+$ brew install aws/tap/copilot-cli
+$ copilot --help
+```
+[Copilot CLI](https://aws.github.io/copilot-cli/)
+
+__AWS ECS-CLI__  
+ECS CLI is an older alternative to _Copilot_. It provides high-level commands to simplify creating, updating, and monitoring clusters and tasks from a local development environment. The Amazon ECS CLI supports Docker Compose files.  
+To install ECS CLI, use home brew
+```
+$ brew install amazon-ecs-cli
+$ ecs-cli --help
+```  
+To configure ECS CLI
+```bash
+# configure a profile for access
+$ ecs-cli configure profile --profile-name chucks1 --access-key XXXXXXXXXXXXXXX --secret-key XXXXXXXXXXXXXXXXX  
+# configure a cluster
+$ ecs-cli configure --cluster plus1-cluster --default-launch-type FARGATE --region eu-west-2 --config-name chucks1-config  
+# create the cluster
+$ ecs-cli up
+```  
+Configuration information is stored in the `~/.ecs` directory on macOS and Linux systems and in `C:\Users\<username>\AppData\local\ecs` on Windows systems.  
+ecs-cli will create the name of the cluster specified if it does not already exist.  
+
+__Common ecs-cli commands__  
+
+Command         | Description
+----------------|-------------
+`ecs-cli ps`    | List the running containers in the cluster
+`ecs-cli images`| Lists images from an ECR repository.
+
+#### Introduction   
+Amazon Elastic Container service is a highly scalable, fast, container management service that makes it easy to run, stop, and manage Docker containers on a cluster.
 It is comparable to Kubernetes, Docker Swarm, and Azure Container Service.  
 
 __Launch Types__  
 There are three models that you can use to launch your container:  
 1. Fargate launch type - This is a serverless pay-as-you-go options
 2. EC2 launch type - Configure and deploy EC2 instances in your cluster to run your container
-3. Amazon ECS on AWS Outposts - 
+3. Amazon ECS on AWS Outposts -
 
 ### Amazon ECS Components
 __Clusters__   
-An Amazon ECS cluster is a logical grouping of tasks or services.
-
-__Containers and images__  
+A cluster is a logical grouping of tasks or services.  
+__Docker containers and images__  
 To deploy applications on Amazon ECS, your application components must be configured to run in containers.   
 Containers are created from a read-only template that's called an image.
-Images are typically built from a Dockerfile.  
+Images are typically built from a _Dockerfile_.   
 
 __Tasks__  
 A task is an instance of a task definition within a cluster. It runs the container defined within the task definition. Multiple tasks can be created from one task definition as needed.  
-It is the lowest level building block of ECS. Think of tasks as a runtime instances.
+It is the lowest level building block of ECS. Think of tasks as runtime instances.   
 
-__Task defintions__   
+__Task definitions__   
 A task definition is a text file that describes one or more containers that forms your application. It is in YAML or JSON format. Think of task definitions as template or blueprint for your task. It contains settings like exposed port, docker image, cpu shares, memory requirement, command to run and environmental variables.
 
 __Services__   
-A service is used to manage one or more Tasks of the same Task definition. 
+A service is used to manage one or more Tasks of the same Task definition.
 You can use an ECS service to run and maintain your desired number of tasks simultaneously in an
 ECS cluster.   
 With a service, you can do autoscaling and load balancing for example, when a Task max out it CPU, the service can add a new Task.  
 
-__Cluster__  
-A ECS cluster is a goup of ECS container instances. An ECS container is an EC2 instance running Docker and ECS container agent. A cluster may contain one or more tasks.   
-![ECS Cluster](https://cdn-media-1.freecodecamp.org/images/scH1QJHgrQ6NgA1jQo9ITuCiQGkAawRHmzSc)
+__ECS Container__  
+An ECS container is an EC2 instance running Docker and ECS container agent.
+
+__ECS Cluster__  
+An ECS cluster is a group of ECS container instances.  
+ A cluster may contain one or more tasks.   
+![ECS Cluster](https://cdn-media-1.freecodecamp.org/images/scH1QJHgrQ6NgA1jQo9ITuCiQGkAawRHmzSc)  
 
 __ECS Container Instance__  
 An ECS container instance is an EC2 instance that has Docker and ECS Container Agent running on it.  A Container Instance can run many Tasks, from the same or different Services. A group of container instances makes up an ECS cluster.  
@@ -45,10 +94,23 @@ An ECS container instance is an EC2 instance that has Docker and ECS Container A
 __Container agent__   
 The container agent runs on each ECS container instance within an Amazon ECS cluster. The Agent takes care of the communication between ECS and the ECS instance, providing the status of running containers and managing running new ones.
 
+__Summary of terms__  
+
+Term            | Description
+----------------|-------
+Docker container| A package containing the application code, configuration and dependencies
+Docker Image    | A template which describes a container
+Task            | A runtime instance of the app. It can contain one or more containers.
+Task definition | A template that defines a task
+Service         | A collection of tasks of the same type
+A service and span multiple ECS container instances
+ECS Container   | An EC2 instance with Docker engine and ECS Container Agent installed
+ECS Cluster     | A group of ECS Container instances
+
 [A beginner’s guide to Amazon’s Elastic Container Service](https://www.freecodecamp.org/news/amazon-ecs-terms-and-architecture-807d8c4960fd/)
 
 #### Setup
-__Seup for AWS ECS__  
+__Setup for AWS ECS__   
 1. Install AWS CLI  
 2. Create a keypair  
 For Amazon ECS, a key pair is only needed if you intend on using the EC2 launch type.  
@@ -56,9 +118,9 @@ For Amazon ECS, a key pair is only needed if you intend on using the EC2 launch 
     $ aws ec2 create-key-pair --key-name MyLinuxKey --query "KeyMaterial" --output text > MyLinuxKey.pem
     $ chmod 400 MyLinuxKey.pem
     ```  
-    You may store you keypair with AWS SecretsManger for longterm use.  
+    You may store you keypair with AWS SecretsManger for long-term use.  
     ```
-    $ aws secretsmanager create-secret --name AmazonLinux4 --description "Amazon linux key" --secret-string $(base64 MyLinuxKey.pem)
+    $ aws secretsmanager create-secret --name MyLinuxKey --description "Amazon linux key" --secret-string $(base64 MyLinuxKey.pem)
     ```  
     If you plan to launch instances in multiple regions, you'll need to create a key pair in each region.
 
@@ -222,16 +284,16 @@ To avoid charges, delete the service and the cluster
     $ aws ecs create-cluster --cluster-name MyCluster
     ```  
     NB: because you have created a non-default cluster, you cannot use the default cluster anymore and must specify your cluster name using the `--cluster` flag in the relevant `ecs` command.  
-2. Create an IAM role and attach the `AmazonEC2ContainerServiceforEC2Role` policy. 
+2. Create an IAM role and attach the `AmazonEC2ContainerServiceforEC2Role` policy.
     ````
-    $ aws iam create-role --role-name ECSContainers --assume-role-policy-document file://trust-policy.json 
+    $ aws iam create-role --role-name ECSContainers --assume-role-policy-document file://trust-policy.json
     $  aws iam attach-role-policy --role-name ECSContainers --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
     ````
     You can get the ARN of the managed policy from the IAM console.  
 3. Create an instance profile and add the IAM role to the profile
     ```
     $ aws iam create-instance-profile --instance-profile-name ECSInstanceProfile
-    $ aws iam add-role-to-instance-profile --role-name ECSContainers --instance-profile-name ECSInstanceProfile 
+    $ aws iam add-role-to-instance-profile --role-name ECSContainers --instance-profile-name ECSInstanceProfile
     ```
 4. Search for an ECS Optimized AMI  
   * Go to AWS EC2 console and click on Launch Instance  button.   
@@ -244,7 +306,7 @@ To avoid charges, delete the service and the cluster
     $ aws ssm get-parameters /aws/service/ecs/optimized-ami/amazon-linux-2/[ami-name]
     ```
     Where `[ami-name]` is the AMI name.  
-    For example 
+    For example
     ```
     $ aws ssm get-parameters --names /aws/service/ecs/optimized-ami/amazon-linux-2/amzn2-ami-ecs-hvm-2.0.20220921-x86_64-ebs
     ```
@@ -255,12 +317,12 @@ To avoid charges, delete the service and the cluster
     ```
     Copy the value of the `image_id` from the result.  
     For windows OS and other ECS optimized AMI see [Retrieving Amazon ECS-Optimized AMI metadata](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/retrieve-ecs-optimized_windows_AMI.html).  
-5. Launch an EC2 Instance with the ECS optimized AMI 
+5. Launch an EC2 Instance with the ECS optimized AMI
   * Launch an EC2 instance using an ECS optimized AMI image Id from the previous step and the IAM instance profile created earlier
     ```
       $ aws ec2 run-instances --image-id ami-02bfd81009b599d71 --subnet-id subnet-0dfa1925f4155b859 --instance-type t2.micro --key-name AmzLinuxKey2 --security-group-ids sg-097302308e8550121 --iam-instance-profile Name=ECSInstanceProfile
     ```
-  * By launching your ECS instance with an ECS optimized AMI, you get `docker` and _ECS container agent_ installed by default. You can ssh into your EC2 instance and check 
+  * By launching your ECS instance with an ECS optimized AMI, you get `docker` and _ECS container agent_ installed by default. You can ssh into your EC2 instance and check
     ```
     $ sudo service docker status
     $ sudo service ecs status
@@ -275,38 +337,38 @@ To avoid charges, delete the service and the cluster
     ```
     $ aws ec2 associate-iam-instance-profile --instance-id i-xxxxxxxxx --iam-instance-profile Name="RoleName"
     ```
-6. (Optional) ssh into your instance and create the ECS container agent config file `/etc/ecs/ecs.config` with the content. 
+6. (Optional) ssh into your instance and create the ECS container agent config file `/etc/ecs/ecs.config` with the content.
     ```bash
-    # containers will now launch into MyCluster instead of the default cluster. 
-    # For default cluster you don't need this variable. 
+    # containers will now launch into MyCluster instead of the default cluster.
+    # For default cluster you don't need this variable.
     ECS_CLUSTER=MyCluster
     # tags for your container instance
     ECS_CONTAINER_INSTANCE_TAGS={"tag_key": "tag_value"}
-    ``` 
+    ```
     This is better done with a user script during launch time if possible.   
-    After doing this, you may need to restart the ECS container agent 
+    After doing this, you may need to restart the ECS container agent
     ```
     $ sudo service ecs restart
-    ``` 
-    See [ECS container agent configuration](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html) for more ECS container agent configuration options. 
-7. List containers instances in your cluster 
+    ```
+    See [ECS container agent configuration](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-agent-config.html) for more ECS container agent configuration options.
+7. List containers instances in your cluster
     ```
     $ aws ecs list-container-instances --cluster MyCluster
-    ``` 
-    If you are using the default cluster you may omit the `--cluster` flag. 
+    ```
+    If you are using the default cluster you may omit the `--cluster` flag.
     The container instance ID is the substring after the cluster name of the container instance ARN.  
-    To get valuable information about the container instance, use the container instance ID: 
+    To get valuable information about the container instance, use the container instance ID:
     ```
     $ aws ecs describe-container-instances --cluster MyCluster --container-instances 6f6fa62409f14b03a93d75a24f65ec2e
     ```
-8. Register a task definition 
+8. Register a task definition
    ```
-   $ aws ecs register-task-definition --cli-input-json file://nginx-task.json 
+   $ aws ecs register-task-definition --cli-input-json file://nginx-task.json
    $ aws ecs list-task-definitions  
    ```
-9. Run task 
+9. Run task
    ```
-   $ aws ecs run-task --cluster MyCluster --task-definition nginx:1 --count 1 
+   $ aws ecs run-task --cluster MyCluster --task-definition nginx:1 --count 1
    $ aws ecs list-tasks --cluster MyCluster
    ```
    The `task-definition` value should be the last segnment og the taskDefinitionArn resulting from the `register-task-definition` output.
@@ -324,7 +386,7 @@ __To access the ECS agent log__
 # SSH into you ECS instance and copy the ecs-agent.log file to home directory
 $ cp /var/log/ecs/ecs-agent.log copy-ecs-agent.log
 # Copy the copy-ecs-agent.log to you local machine
-scp -i ~/MyKeyPair.pem ec2-user@xx.xxx.x.xx:~/copy-ecs-agent.log ecs-agent.log 
+scp -i ~/MyKeyPair.pem ec2-user@xx.xxx.x.xx:~/copy-ecs-agent.log ecs-agent.log
 ```
 
 __To See the policies attached to a role__  
@@ -336,5 +398,3 @@ __Resources__
 [Example task definition](https://docs.aws.amazon.com/AmazonECS/latest/userguide/example_task_definitions.html)   
 [AWS Sample task definitions](https://github.com/aws-samples/aws-containers-task-definitions)   
 [Task definition parameters](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task_definition_parameters.html)
-
-
