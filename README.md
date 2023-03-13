@@ -395,6 +395,6 @@ $ aws iam list-attached-role-policies --role-name ecs-instances
 ```
 
 __Resources__  
-[Example task definition](https://docs.aws.amazon.com/AmazonECS/latest/userguide/example_task_definitions.html)   
-[AWS Sample task definitions](https://github.com/aws-samples/aws-containers-task-definitions)   
-[Task definition parameters](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task_definition_parameters.html)
+[Example task definition](https://docs.aws.amazon.com/AmazonECS/latest/userguide/example_task_definitions.html)    
+[AWS Sample task definitions](https://github.com/aws-samples/aws-containers-task-definitions)    
+[Task definition parameters](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task_definition_parameters.html)   

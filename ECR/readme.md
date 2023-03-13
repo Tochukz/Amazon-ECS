@@ -23,7 +23,7 @@ __Features of ECR__
 3. Cross-Region and cross-account replication
 4. Pull through cache rules
 
-### Getting started
+## Chapter 1: Getting started
 __To install Docker on an Amazon EC2 instance__  
 For EC2 instance running Amazon Linux 2 AMI   
 ```bash
@@ -113,3 +113,8 @@ __Delete your repository__
 ```
 $ aws ecr delete-repository --repository-name apache-app
 ```
+
+## Chapter 2: Private Registry
+__Private registry concepts__    
+Each AWS account is provided with a default private Amazon ECR registry.  
+The URL for your default private registry is https://aws_account_id.dkr.ecr.region.amazonaws.com.
