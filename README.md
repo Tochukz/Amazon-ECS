@@ -8,11 +8,41 @@
 [ECS Workshop](https://ecsworkshop.com/)
 
 ## Chapter 1: Introduction
+### Amazon ECS terminology and components
+* __Capacity__ - The infrastructure where your containers run
+* __Controller__ - Deploy and manage your applications that run on the containers
+* __Provisioning__ - The tools that you can use to interface with the scheduler to deploy and manage your applications and containers
+
+### Amazon ECS features
+__CI/CD__  
+* Monitors changes to a source code repository
+* Builds a new Docker image from that source
+* Pushes the image to an image repository such as Amazon ECR or Docker Hub
+* Updates your Amazon ECS services to use the new image in your application
+
+__Multiple options for a way to interconnect your applications__  
+* Service Discovery - Integrates services with _AWS Cloud Map_ namespaces.
+* Amazon ECS Service Connect - Define logical names for your service endpoints.  
+
+### Common use cases in Amazon ECS
+Fargate is suitable for the following workloads:
+* Large workloads that need to be optimized for low overhead
+* Small workloads that have occasional burst
+* Tiny workloads
+* Batch workloads
+
+EC2 is suitable for the following workloads:
+* Workloads that require consistently high CPU core and memory usage
+* Large workloads that need to be optimized for price
+* Your applications need to access persistent storage
+* You must directly manage your infrastructure
+
 ### Setup
 __Create a VPC Only__  
 ```
 $ aws ec2 create-vpc --cidr-block 10.0.0.0/16
 ```  
+
 #### CLI Tools
 __AWS Copilot__   
 AWS Copilot is used to build, release, and operate containerized applications on Amazon ECS, and AWS Fargate.
@@ -398,3 +428,4 @@ __Resources__
 [Example task definition](https://docs.aws.amazon.com/AmazonECS/latest/userguide/example_task_definitions.html)    
 [AWS Sample task definitions](https://github.com/aws-samples/aws-containers-task-definitions)    
 [Task definition parameters](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task_definition_parameters.html)   
+[Deploying Docker containers on ECS](https://docs.docker.com/cloud/ecs-integration/)  
