@@ -429,3 +429,5 @@ __Resources__
 [AWS Sample task definitions](https://github.com/aws-samples/aws-containers-task-definitions)    
 [Task definition parameters](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task_definition_parameters.html)   
 [Deploying Docker containers on ECS](https://docs.docker.com/cloud/ecs-integration/)  
+[Task Definition Parameters](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html)   
+[Task Definition Template](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-definition-template.html)  

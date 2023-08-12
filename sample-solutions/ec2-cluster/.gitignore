@@ -1,0 +1,4 @@
+keys
+tfsec-result.json
+.terraform.lock.hcl
+.terraform
