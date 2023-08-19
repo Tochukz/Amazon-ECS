@@ -15,9 +15,14 @@ terraform {
 
 data "aws_region" current {}
 
+data "aws_ecr_repository" "repo" {
+  name = var.repository_name
+}
+
 locals {
   region = data.aws_region.current.name
 }
+
 data "aws_iam_policy_document" "ecs_agent" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -28,19 +33,12 @@ data "aws_iam_policy_document" "ecs_agent" {
   }
 }
 
-data "template_file" "task_definition_template" {
-    template = file("task-definition.json.tpl")
-    vars = {
-      REPOSITORY_URL = replace(var.repository_url, "https://", "")
-    }
-}
-
 resource "aws_vpc" "cluster_vpc" {
   cidr_block = "10.0.0.0/16"
   enable_dns_hostnames = true 
   enable_dns_support = true
   tags = {
-    Name = "CLusterVPC"
+    Name = "ClusterVPC"
   }
 }
 
@@ -48,23 +46,30 @@ resource "aws_internet_gateway" "cluster_gateway" {
   vpc_id = aws_vpc.cluster_vpc.id
 }
 
-resource "aws_subnet" "public_subnet" {
+resource "aws_subnet" "public_subnet1" {
   vpc_id = aws_vpc.cluster_vpc.id 
-  cidr_block = "10.0.0.0/17"
+  cidr_block = "10.0.128.0/19"
   map_public_ip_on_launch = true
   availability_zone = "${local.region}a"
 }
 
+resource "aws_subnet" "public_subnet2" {
+  vpc_id = aws_vpc.cluster_vpc.id 
+  cidr_block = "10.0.160.0/19"
+  map_public_ip_on_launch = true
+  availability_zone = "${local.region}b"
+}
+
 resource "aws_subnet" "private_subnet1" {
   vpc_id = aws_vpc.cluster_vpc.id 
-  cidr_block = "10.0.128.0/18"
+  cidr_block = "10.0.192.0/19"
   map_public_ip_on_launch = false
   availability_zone = "${local.region}a"
 }
 
 resource "aws_subnet" "private_subnet2" {
   vpc_id = aws_vpc.cluster_vpc.id 
-  cidr_block = "10.0.192.0/18"
+  cidr_block = "10.0.224.0/19"
   map_public_ip_on_launch = false
   availability_zone = "${local.region}b"
 }
@@ -78,7 +83,7 @@ resource "aws_route_table" "public_route_table" {
 }
 
 resource "aws_route_table_association" "public_route_subnet_assoc" {
-  subnet_id = aws_subnet.public_subnet.id 
+  subnet_id = aws_subnet.public_subnet1.id 
   route_table_id = aws_route_table.public_route_table.id
 }
 
@@ -142,7 +147,7 @@ resource "aws_key_pair" "ssh_key" {
 }
 
 resource "aws_launch_configuration" "ecs_launch_config" {
-  image_id = "ami-093fe7ed1e6dc726c"
+  image_id = "ami-093fe7ed1e6dc726c" # ECS optimized AMI
   iam_instance_profile = aws_iam_instance_profile.ecs_agent.name
   security_groups = [ aws_security_group.ec2_security_group.id ]
   user_data = file("user-data.sh")
@@ -153,7 +158,7 @@ resource "aws_launch_configuration" "ecs_launch_config" {
 
 resource "aws_autoscaling_group" "cluster_scaling" {
   name = "ClusterAutoScaling"
-  vpc_zone_identifier = [ aws_subnet.public_subnet.id ]
+  vpc_zone_identifier = [ aws_subnet.public_subnet1.id ]
   launch_configuration = aws_launch_configuration.ecs_launch_config.name
   desired_capacity = 2 
   min_size = 1 
@@ -170,6 +175,8 @@ resource "aws_db_subnet_group" "db_subnet_group" {
 }
 
 resource "aws_db_instance" "mysql" {
+  count = 0
+
   identifier = "mysql"
   allocated_storage         = 5
   backup_retention_period   = 2
@@ -200,12 +207,74 @@ resource "aws_ecs_cluster" "custom_cluster" {
 
 resource "aws_ecs_task_definition" "task_def" {
   family = "ec2-cluser"
-  container_definitions = data.template_file.task_definition_template.rendered
+  network_mode = "host"
+  container_definitions = templatefile("task-definition.tftpl", { 
+      REPOSITORY_URL = replace(data.aws_ecr_repository.repo.repository_url, "https://", ""),
+      CONTAINER_NAME = var.container_name
+  })
+}
+
+resource "aws_lb" "cluster_lb" {
+  name               = "cluster-load-balancer"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups = [aws_security_group.ec2_security_group.id  ]
+  subnets            = [
+    aws_subnet.public_subnet1.id,
+    aws_subnet.public_subnet2.id
+  ]
+  enable_deletion_protection = false
+
+  # access_logs {
+  #   bucket  = aws_s3_bucket.lb_logs.id
+  #   prefix  = "test-lb"
+  #   enabled = true
+  # }
+
+  tags = {
+    Name = "Cluster_Application_Load_Balancer"
+  }
+}
+
+resource "aws_lb_target_group" "cluster_lb_target_gp" {
+  name        = "cluster-target-group"
+  port        = 3000  # Replace with your container's exposed port
+  protocol    = "HTTPS"
+  target_type = "alb"
+  vpc_id      = aws_vpc.cluster_vpc.id 
+}
+
+# resource "aws_lb_target_group_attachment" "cluster_group_attach" {
+#   target_group_arn = aws_lb_target_group.cluster_lb_target_gp.arn
+#   target_id = aws_lb.cluster_lb.arn
+#   port = 3000
+# }
+
+resource "aws_lb_listener" "cluster_listener" {
+  load_balancer_arn = aws_lb.cluster_lb.arn
+  port = 3000
+  protocol = "HTTPS"
+
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.cluster_lb_target_gp.arn
+  }
 }
 
 resource "aws_ecs_service" "cluster_service" {
   name = "cluster-service"
   cluster = aws_ecs_cluster.custom_cluster.id
   task_definition = aws_ecs_task_definition.task_def.arn 
+  launch_type     = "EC2"
   desired_count = 2
+
+  network_configuration {
+    subnets = [aws_subnet.public_subnet1.id]
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.cluster_lb_target_gp.arn
+    container_name   = var.container_name 
+    container_port   = 3000
+  }
 }
