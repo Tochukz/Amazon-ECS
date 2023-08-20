@@ -5,3 +5,4 @@ results
 .DS_Store
 node_modules
 tfsec-result*.json
+errored.tfstate

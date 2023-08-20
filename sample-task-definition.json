@@ -1,0 +1,86 @@
+{
+  "executionRoleArn": "arn:aws:iam::665778208875:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "appname-FargateDevelopmentTaskDefwebLogGroup9045FDA72E-jhjhjhjggj",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "portMappings": [
+        {
+          "hostPort": 8080,
+          "protocol": "tcp",
+          "containerPort": 8080
+        }
+      ],
+      "cpu": 0,
+      "environment": [
+        {
+          "name": "DATABASE_HOST",
+          "value": ""
+        },
+        {
+          "name": "DATABASE_NAME",
+          "value": ""
+        },
+        {
+          "name": "DATABASE_PASSWORD",
+          "value": ""
+        },
+        {
+          "name": "DATABASE_PORT",
+          "value": ""
+        },
+        {
+          "name": "DATABASE_USERNAME",
+          "value": ""
+        },
+        {
+          "name": "NODE_ENV",
+          "value": ""
+        },
+        {
+          "name": "AWS_ACCESS_KEY_ID",
+          "value": ""
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "value": ""
+        },
+        {
+          "name": "CLIENT_HOST",
+          "value": ""
+        },
+        {
+          "name": "URL",
+          "value": ""
+        },
+        {
+          "name": "JWT_SECRET",
+          "value": ""
+        },
+        {
+          "name": "SERVER_HOST",
+          "value": ""
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "image": "",
+      "essential": true,
+      "name": "web"
+    }
+  ],
+  "placementConstraints": [],
+  "taskRoleArn": "arn:aws:iam::665778208875:role/ecsTaskExecutionRole",
+  "family": "",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "256",
+  "memory": "512",
+  "volumes": []
+}
