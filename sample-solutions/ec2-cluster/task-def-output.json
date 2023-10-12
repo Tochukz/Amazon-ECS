@@ -1,0 +1,35 @@
+{
+    "taskDefinition": {
+        "taskDefinitionArn": "arn:aws:ecs:eu-west-2:665778208875:task-definition/ec2-cluser:4",
+        "containerDefinitions": [
+            {
+                "name": "worker",
+                "image": "665778208875.dkr.ecr.eu-west-2.amazonaws.com/express-app:latest",
+                "cpu": 2,
+                "memory": 512,
+                "portMappings": [],
+                "essential": true,
+                "environment": [],
+                "mountPoints": [],
+                "volumesFrom": []
+            }
+        ],
+        "family": "ec2-cluser",
+        "revision": 4,
+        "volumes": [],
+        "status": "ACTIVE",
+        "requiresAttributes": [
+            {
+                "name": "com.amazonaws.ecs.capability.ecr-auth"
+            }
+        ],
+        "placementConstraints": [],
+        "compatibilities": [
+            "EXTERNAL",
+            "EC2"
+        ],
+        "registeredAt": "2023-08-18T20:59:09.773000+02:00",
+        "registeredBy": "arn:aws:iam::665778208875:user/sovtechchucks"
+    },
+    "tags": []
+}
